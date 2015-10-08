@@ -1,0 +1,5 @@
+#JSGF V1.0;
+
+grammar cmd1;
+
+public <cmd1> = (check in box) | (reply email) | (read first email);
