@@ -4,17 +4,14 @@ import java.io.File;
 import java.io.IOException;
 
 import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
-import android.app.Activity;
 import android.os.Message;
 import android.os.Handler;
 import android.os.AsyncTask;
-import android.os.Bundle;
-import android.widget.TextView;
-import android.widget.Toast;
 import android.content.Context;
 import android.util.Log;
 
 import edu.cmu.pocketsphinx.Assets;
+import edu.cmu.pocketsphinx.Config;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
 import edu.cmu.pocketsphinx.SpeechRecognizer;
@@ -28,8 +25,10 @@ public class CommandListener implements RecognitionListener {
     private SpeechRecognizer recognizer;
     Context context;
     private static final String CMD_START = "cmd_start";
+    private static final String CMD_FINAL = "cmd_final";
     private static final String CMD_TYPE1 = "cmd1";
     private static final String START_KEY = "in mind agent";
+    private static final String TERMINATE_WORD = "terminate";
     private Handler commandHandler;
 
     public CommandListener(Context con, Handler commandHandler){
@@ -90,6 +89,7 @@ public class CommandListener implements RecognitionListener {
 
         //recognizer.addKeyphraseSearch("cmd1", "reply email");
         recognizer.addKeyphraseSearch(CMD_START, "in mind agent");
+        recognizer.addKeyphraseSearch(CMD_FINAL, TERMINATE_WORD);
         File cmd1Grammar = new File(assetsDir, "cmd1.gram");
         recognizer.addGrammarSearch(CMD_TYPE1, cmd1Grammar);
         //TODO
@@ -169,7 +169,11 @@ public class CommandListener implements RecognitionListener {
                 commandHandler.sendMessage(msg);
                 recognizer.stop();
             }
-
+            if (cmd.equals(TERMINATE_WORD)){
+                Message msg = new Message();
+                msg.arg1 = 3;
+                commandHandler.sendMessage(msg);
+            }
         }
 
         //System.out.println("partial result!");

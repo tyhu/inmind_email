@@ -18,8 +18,11 @@ import android.widget.TextView;
 
 public class EmailTest extends AppCompatActivity {
 
+    //public ContinuousDecoder cDecoder;
+
     TTSController tts;
     public CommandListener commandListener;
+    //public AndroidCommandListener commandListener;
     public Handler commandHandler;
     Context context;
     private String command;
@@ -30,6 +33,7 @@ public class EmailTest extends AppCompatActivity {
     Button stopButton;
     EditText textCmd;
     TextView tView;
+
 
 
     @Override
@@ -47,6 +51,8 @@ public class EmailTest extends AppCompatActivity {
         context = getApplicationContext();
         tts = new TTSController(context);
 
+        //cDecoder = new ContinuousDecoder(context);
+
         commandHandler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
@@ -57,19 +63,24 @@ public class EmailTest extends AppCompatActivity {
                 }
                 if (msg.arg1==1){
                     command = msg.obj.toString();
-                    tView.setText("action for: \n"+command);
-                    if(command.equals("check in box")){
+                    tView.setText("action for: \n" + command);
+                    if(command.equals("check in box") || command.equals("check inbox")){
                         checkInBox();
+                        commandListener.Search("cmd_start", -1);
                     }
                     else if(command.equals("reply email")){
                         replyEmail();
                     }
                     else if(command.equals("read first email")){
                         ReadFirstEmail();
+                        commandListener.Search("cmd_start",-1);
                     }
-                    commandListener.Search("cmd_start",-1);
                 }
                 if (msg.arg1==2){
+                    commandListener.Search("cmd_start",-1);
+                }
+                if (msg.arg1==3){
+                    tts.speakThis("Your email has been sent.");
                     commandListener.Search("cmd_start",-1);
                 }
                 return false;
@@ -77,6 +88,7 @@ public class EmailTest extends AppCompatActivity {
         });
 
         commandListener = new CommandListener(context, commandHandler);
+        //commandListener = new AndroidCommandListener(context, commandHandler);
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -109,10 +121,16 @@ public class EmailTest extends AppCompatActivity {
     }
     public void replyEmail(){
         tts.speakThis("Say terminate when you finish, you can start to speak now");
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        commandListener.Search("cmd_final",-1);
     }
 
     public void ReadFirstEmail(){
-        tts.speakThis("Mom said, How are you today?");
+        tts.speakThis("Mom said, How are you doing today?");
     }
 
     @Override
