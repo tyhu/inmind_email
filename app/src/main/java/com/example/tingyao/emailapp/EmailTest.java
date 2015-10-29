@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,14 +15,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.util.HashMap;
 
 
 public class EmailTest extends AppCompatActivity {
 
     //public ContinuousDecoder cDecoder;
 
-    TTSController tts;
+    EmailNLG emailNLG;
     public CommandListener commandListener;
     //public AndroidCommandListener commandListener;
     public Handler commandHandler;
@@ -34,7 +42,8 @@ public class EmailTest extends AppCompatActivity {
     EditText textCmd;
     TextView tView;
 
-
+    //tmp, should be handled by DM
+    MyHttpConnect conn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +58,7 @@ public class EmailTest extends AppCompatActivity {
         tView = (TextView)findViewById(R.id.textView);
 
         context = getApplicationContext();
-        tts = new TTSController(context);
+        emailNLG = new EmailNLG(context);
 
         //cDecoder = new ContinuousDecoder(context);
 
@@ -59,7 +68,7 @@ public class EmailTest extends AppCompatActivity {
                 if (msg.arg1==0){
                     //start keyword
                     commandListener.Search("cmd1",7000);
-                    tts.speakThis("Yes?");
+                    emailNLG.speakRaw("Yes?");
                 }
                 if (msg.arg1==1){
                     command = msg.obj.toString();
@@ -71,8 +80,12 @@ public class EmailTest extends AppCompatActivity {
                     else if(command.equals("reply email")){
                         replyEmail();
                     }
-                    else if(command.equals("read first email")){
+                    else if(command.equals("read the email from")){
                         ReadFirstEmail();
+                        commandListener.Search("cmd_start",-1);
+                    }
+                    else if(command.equals("summarize them")){
+                        Summarize();
                         commandListener.Search("cmd_start",-1);
                     }
                 }
@@ -80,12 +93,20 @@ public class EmailTest extends AppCompatActivity {
                     commandListener.Search("cmd_start",-1);
                 }
                 if (msg.arg1==3){
-                    tts.speakThis("Your email has been sent.");
+                    emailNLG.speakRaw("Your email has been sent.");
                     commandListener.Search("cmd_start",-1);
                 }
                 return false;
             }
         });
+
+        //tmp, should be handled by DM
+        //allow main thread execute network operation
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
+        conn = new MyHttpConnect("http://128.237.200.161:9000");
 
         commandListener = new CommandListener(context, commandHandler);
         //commandListener = new AndroidCommandListener(context, commandHandler);
@@ -115,12 +136,53 @@ public class EmailTest extends AppCompatActivity {
 
     }
 
+    public void Summarize() {
+        String responseStr = PostCmd("summarize");
+        CommandParser parse = new CommandParser(responseStr);
+        String[] senderlst = parse.GetStringLst("Senderlst");
+        System.out.println("length: "+senderlst.length);
+        emailNLG.SummerizeSend(senderlst);
+
+    }
+
+    public String PostToServer(String params){
+        String responseStr = "";
+        try{
+            HttpURLConnection response = (HttpURLConnection)conn.PostToServer(params);
+            System.out.println("connection success!");
+            int responseCode = response.getResponseCode();
+            if(responseCode == HttpURLConnection.HTTP_OK){
+                String line;
+                BufferedReader br=new BufferedReader(new InputStreamReader(response.getInputStream()));
+                while ((line=br.readLine()) != null) {
+                    responseStr+=line;
+                }
+
+            }
+        }catch (IOException e){
+            Log.e("Main","connection error");
+        }
+        return responseStr;
+    }
+
+    public String PostCmd(String cmd){
+        HashMap<String, String> keyValuePairs = new HashMap<String,String>();
+        keyValuePairs.put("Command", cmd);
+        String params = conn.SetParams(keyValuePairs);
+
+        return PostToServer(params);
+    }
+
     public void checkInBox(){
-        tts.speakThis("You have a new email from Mom");
+        String responseStr = PostCmd("check-in-box");
+        CommandParser parse = new CommandParser(responseStr);
+        int msgnum = parse.GetInt("unread_num");
+        emailNLG.InformUnread(msgnum);
         //communicate to email server
     }
-    public void replyEmail(){
-        tts.speakThis("Say terminate when you finish, you can start to speak now");
+
+    public void replyEmail() {
+        emailNLG.speakRaw("Say terminate when you finish, you can start to speak now");
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
@@ -129,8 +191,15 @@ public class EmailTest extends AppCompatActivity {
         commandListener.Search("cmd_final",-1);
     }
 
-    public void ReadFirstEmail(){
-        tts.speakThis("Mom said, How are you doing today?");
+    public void ReadFirstEmail() {
+        HashMap<String, String> keyValuePairs = new HashMap<String,String>();
+        keyValuePairs.put("Command", "read");
+        keyValuePairs.put("MsgId", "first");
+        String params = conn.SetParams(keyValuePairs);
+        String responseStr = PostToServer(params);
+        CommandParser parse = new CommandParser(responseStr);
+        String emailcontent = parse.GetString("email-content");
+        emailNLG.speakRaw(emailcontent);
     }
 
     @Override

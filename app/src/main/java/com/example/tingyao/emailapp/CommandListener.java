@@ -161,7 +161,7 @@ public class CommandListener implements RecognitionListener {
                 msg.arg1 = 0;
                 commandHandler.sendMessage(msg);
             }
-            if (cmd.equals("reply email") || cmd.equals("check in box") || cmd.equals("read first email")){
+            if (cmd.equals("reply email") || cmd.equals("check in box") || cmd.equals("read the email from") || cmd.equals("summarize them")){
                 Message msg = new Message();
                 msg.arg1 = 1;
                 msg.obj = cmd;
