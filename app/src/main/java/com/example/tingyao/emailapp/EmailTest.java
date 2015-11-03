@@ -81,8 +81,9 @@ public class EmailTest extends AppCompatActivity {
                         replyEmail();
                     }
                     else if(command.equals("read the email from")){
-                        ReadFirstEmail();
-                        commandListener.Search("cmd_start",-1);
+                        //ReadFirstEmail();
+                        //commandListener.Search("cmd_start",-1);
+                        commandListener.Search("contact",-1);
                     }
                     else if(command.equals("summarize them")){
                         Summarize();
@@ -90,10 +91,14 @@ public class EmailTest extends AppCompatActivity {
                     }
                 }
                 if (msg.arg1==2){
-                    commandListener.Search("cmd_start",-1);
+                    commandListener.Search("cmd_start", -1);
                 }
                 if (msg.arg1==3){
                     emailNLG.speakRaw("Your email has been sent.");
+                    commandListener.Search("cmd_start",-1);
+                }
+                if (msg.arg1==4){
+                    ReadEmailFrom(msg.obj.toString());
                     commandListener.Search("cmd_start",-1);
                 }
                 return false;
@@ -106,7 +111,7 @@ public class EmailTest extends AppCompatActivity {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
         }
-        conn = new MyHttpConnect("http://128.237.200.161:9000");
+        conn = new MyHttpConnect("http://128.237.173.246:9000");
 
         commandListener = new CommandListener(context, commandHandler);
         //commandListener = new AndroidCommandListener(context, commandHandler);
@@ -188,13 +193,25 @@ public class EmailTest extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        commandListener.Search("cmd_final",-1);
+        commandListener.Search("cmd_final", -1);
     }
 
     public void ReadFirstEmail() {
         HashMap<String, String> keyValuePairs = new HashMap<String,String>();
         keyValuePairs.put("Command", "read");
         keyValuePairs.put("MsgId", "first");
+        String params = conn.SetParams(keyValuePairs);
+        String responseStr = PostToServer(params);
+        CommandParser parse = new CommandParser(responseStr);
+        String emailcontent = parse.GetString("email-content");
+        emailNLG.speakRaw(emailcontent);
+    }
+
+    public void ReadEmailFrom(String sender){
+        HashMap<String, String> keyValuePairs = new HashMap<String,String>();
+        keyValuePairs.put("Command", "read");
+        keyValuePairs.put("MsgId", "name");
+        keyValuePairs.put("Name", sender);
         String params = conn.SetParams(keyValuePairs);
         String responseStr = PostToServer(params);
         CommandParser parse = new CommandParser(responseStr);

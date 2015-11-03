@@ -27,6 +27,7 @@ public class CommandListener implements RecognitionListener {
     private static final String CMD_START = "cmd_start";
     private static final String CMD_FINAL = "cmd_final";
     private static final String CMD_TYPE1 = "cmd1";
+    private static final String CMD_CONTACT = "contact";
     private static final String START_KEY = "in mind agent";
     private static final String TERMINATE_WORD = "terminate";
     private Handler commandHandler;
@@ -91,7 +92,9 @@ public class CommandListener implements RecognitionListener {
         recognizer.addKeyphraseSearch(CMD_START, "in mind agent");
         recognizer.addKeyphraseSearch(CMD_FINAL, TERMINATE_WORD);
         File cmd1Grammar = new File(assetsDir, "cmd1.gram");
+        File contactGrammar = new File(assetsDir, "contact.gram");
         recognizer.addGrammarSearch(CMD_TYPE1, cmd1Grammar);
+        recognizer.addGrammarSearch(CMD_CONTACT, contactGrammar);
         //TODO
         //I should define all the searching type here
         /** In your application you might not need to add all those searches.
@@ -172,6 +175,12 @@ public class CommandListener implements RecognitionListener {
             if (cmd.equals(TERMINATE_WORD)){
                 Message msg = new Message();
                 msg.arg1 = 3;
+                commandHandler.sendMessage(msg);
+            }
+            if (recognizer.getSearchName().equals(CMD_CONTACT)){
+                Message msg = new Message();
+                msg.arg1 = 4;
+                msg.obj = cmd;
                 commandHandler.sendMessage(msg);
             }
         }

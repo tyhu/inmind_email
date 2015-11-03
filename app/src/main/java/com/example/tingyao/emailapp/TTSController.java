@@ -83,7 +83,7 @@ public class TTSController {
         am = (AudioManager) appContect.getSystemService(Context.AUDIO_SERVICE);
         amStreamMusicMaxVol = am.getStreamMaxVolume(am.STREAM_MUSIC);
         am.setStreamVolume(am.STREAM_MUSIC, amStreamMusicMaxVol-5, 0);
-        ttobj.setSpeechRate((float) 0.95);
+        ttobj.setSpeechRate((float) 0.90);
     }
 
     @SuppressWarnings("deprecation")
