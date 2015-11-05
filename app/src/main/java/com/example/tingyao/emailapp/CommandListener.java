@@ -22,7 +22,8 @@ import edu.cmu.pocketsphinx.SpeechRecognizer;
 public class CommandListener implements RecognitionListener {
 
     //Class Members
-    private SpeechRecognizer recognizer;
+    //private SpeechRecognizer recognizer;
+    private MyRecognizer recognizer;
     Context context;
     private static final String CMD_START = "cmd_start";
     private static final String CMD_FINAL = "cmd_final";
@@ -71,7 +72,8 @@ public class CommandListener implements RecognitionListener {
         // The recognizer can be configured to perform multiple searches
         // of different kind and switch between them
 
-        recognizer = defaultSetup()
+        //recognizer = defaultSetup()
+        recognizer = MyRecognizerSetup.defaultSetup()
                 .setAcousticModel(new File(assetsDir, "en-us-ptm"))
                 .setDictionary(new File(assetsDir, "cmudict-en-us.dict"))
 

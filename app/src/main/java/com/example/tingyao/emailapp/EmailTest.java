@@ -111,7 +111,7 @@ public class EmailTest extends AppCompatActivity {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
         }
-        conn = new MyHttpConnect("http://128.237.173.246:9000");
+        conn = new MyHttpConnect("http://128.2.212.80:9000");
 
         commandListener = new CommandListener(context, commandHandler);
         //commandListener = new AndroidCommandListener(context, commandHandler);
