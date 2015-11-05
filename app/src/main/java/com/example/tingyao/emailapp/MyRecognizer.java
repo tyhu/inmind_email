@@ -10,9 +10,12 @@ import edu.cmu.pocketsphinx.FsgModel;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by harry on 11/5/15.
@@ -27,6 +30,8 @@ public class MyRecognizer {
     private Thread recognizerThread;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Collection<RecognitionListener> listeners = new HashSet();
+
+    private File historyRaw = new File("/sdcard/history.raw");
 
     protected MyRecognizer(Config config) throws IOException {
         this.decoder = new Decoder(config);
@@ -72,6 +77,18 @@ public class MyRecognizer {
             Log.i(TAG, String.format("Start recognition \"%s\"", new Object[]{searchName}));
             this.decoder.setSearch(searchName);
             this.recognizerThread = new RecognizerThread(timeout);
+            this.recognizerThread.start();
+            return true;
+        }
+    }
+
+    public boolean startSuperListening(String searchName, int timeout) {
+        if(null != this.recognizerThread) {
+            return false;
+        } else {
+            Log.i(TAG, String.format("Start recognition \"%s\"", new Object[]{searchName}));
+            this.decoder.setSearch(searchName);
+            this.recognizerThread = new SuperRecognizerThread(timeout);
             this.recognizerThread.start();
             return true;
         }
@@ -298,5 +315,112 @@ public class MyRecognizer {
 
             }
         }
+    }
+
+    private final class SuperRecognizerThread extends Thread {
+        private int remainingSamples;
+        private int timeoutSamples;
+        private static final int NO_TIMEOUT = -1;
+
+        //speech properties
+        Queue<float[]> energyQueue = new ConcurrentLinkedQueue<float[]>();
+
+
+        public SuperRecognizerThread(int timeout) {
+            if(timeout != -1) {
+                this.timeoutSamples = timeout * sampleRate / 1000;
+            } else {
+                this.timeoutSamples = -1;
+            }
+
+            this.remainingSamples = this.timeoutSamples;
+        }
+
+        //speech utilities
+        private float bufferEnergy(short[] buf){
+            float eng = 0;
+            for(int i=0;i<buf.length;i++)
+                eng+=buf[i]*buf[i];
+            return eng;
+        }
+
+        public void run() {
+            try(FileOutputStream fop = new FileOutputStream(historyRaw)){
+                recorder.startRecording();
+                if(recorder.getRecordingState() == 1) {
+                    recorder.stop();
+                    IOException buffer1 = new IOException("Failed to start recording. Microphone might be already in use.");
+                    mainHandler.post(new OnErrorEvent(buffer1));
+                } else {
+                    Log.d(MyRecognizer.TAG, "Starting decoding");
+                    decoder.startUtt();
+                    short[] buffer = new short[bufferSize];
+                    boolean inSpeech = decoder.getInSpeech();
+                    recorder.read(buffer, 0, buffer.length);
+
+                    while(!interrupted() && (this.timeoutSamples == -1 || this.remainingSamples > 0)) {
+                        int nread = recorder.read(buffer, 0, buffer.length);
+                        if(-1 == nread) {
+                            throw new RuntimeException("error reading audio buffer");
+                        }
+
+                        if(nread > 0) {
+                            fop.write(short2byte(buffer, buffer.length));
+                            //whatever audio processing
+
+
+                            decoder.processRaw(buffer, (long)nread, false, false);
+                            if(decoder.getInSpeech() != inSpeech) {
+                                inSpeech = decoder.getInSpeech();
+                                mainHandler.post(new InSpeechChangeEvent(inSpeech));
+                            }
+
+                            if(inSpeech) {
+                                this.remainingSamples = this.timeoutSamples;
+                            }
+
+                            Hypothesis hypothesis = decoder.hyp();
+                            mainHandler.post(new ResultEvent(hypothesis, false));
+                        }
+
+                        if(this.timeoutSamples != -1) {
+                            this.remainingSamples -= nread;
+                        }
+                    }
+
+                    recorder.stop();
+                    decoder.endUtt();
+                    mainHandler.removeCallbacksAndMessages((Object)null);
+                    if(this.timeoutSamples != -1 && this.remainingSamples <= 0) {
+                        mainHandler.post(new TimeoutEvent());
+                    }
+
+                }
+                fop.flush();
+                fop.close();
+            } catch(Exception ex){
+                Log.e("VS", "exception: " + ex.getMessage());
+            }
+
+        }
+    }
+
+    public short[] byte2short(byte[] buf, int bufsize){
+        short[] audioSeg=new short[bufsize/2];
+        for (int i = 0; i <bufsize/2 ; i++) {
+            audioSeg[i]=buf[i*2];
+            //audioSeg[i] = (short) ((buf[2*i] << 8) | buf[2*i+1]);
+            audioSeg[i] = (short) ((buf[2*i+1] << 8) | buf[2*i]);
+        }
+        return audioSeg;
+    }
+
+    public byte[] short2byte(short[] buf,int bufsize){
+        byte[] bytebuf=new byte[bufsize*2];
+        for(int i=0;i<bufsize;i++){
+            bytebuf[2*i]= (byte)(buf[i] & 0xff);
+            bytebuf[2*i+1]= (byte)((buf[i] >> 8) & 0xff);
+        }
+        return bytebuf;
     }
 }

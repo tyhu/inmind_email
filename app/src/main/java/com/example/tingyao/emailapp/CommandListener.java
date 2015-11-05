@@ -137,6 +137,11 @@ public class CommandListener implements RecognitionListener {
             recognizer.startListening(type, search_duration);
     }
 
+    public void SuperSearch(String type, int search_duration){
+        recognizer.stop();
+        recognizer.startSuperListening(type, search_duration);
+    }
+
     public void StopSearch(){
         recognizer.stop();
     }
@@ -173,6 +178,13 @@ public class CommandListener implements RecognitionListener {
 
                 commandHandler.sendMessage(msg);
                 recognizer.stop();
+            }
+            if (cmd.equals("play history")){
+                Message msg = new Message();
+                msg.arg1 = 5;
+                msg.obj = cmd;
+                recognizer.stop();
+                commandHandler.sendMessage(msg);
             }
             if (cmd.equals(TERMINATE_WORD)){
                 Message msg = new Message();

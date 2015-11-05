@@ -1,6 +1,9 @@
 package com.example.tingyao.emailapp;
 
 
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.os.Bundle;
 import android.content.Context;
 import android.os.Handler;
@@ -17,6 +20,8 @@ import android.widget.TextView;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -100,6 +105,9 @@ public class EmailTest extends AppCompatActivity {
                 if (msg.arg1==4){
                     ReadEmailFrom(msg.obj.toString());
                     commandListener.Search("cmd_start",-1);
+                }
+                if (msg.arg1==5){
+                    PlayBack();
                 }
                 return false;
             }
@@ -189,11 +197,11 @@ public class EmailTest extends AppCompatActivity {
     public void replyEmail() {
         emailNLG.speakRaw("Say terminate when you finish, you can start to speak now");
         try {
-            Thread.sleep(3000);
+            Thread.sleep(3500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        commandListener.Search("cmd_final", -1);
+        commandListener.SuperSearch("cmd_final", -1);
     }
 
     public void ReadFirstEmail() {
@@ -217,6 +225,34 @@ public class EmailTest extends AppCompatActivity {
         CommandParser parse = new CommandParser(responseStr);
         String emailcontent = parse.GetString("email-content");
         emailNLG.speakRaw(emailcontent);
+    }
+
+    public void PlayBack(){
+        AudioTrack trackplay=new AudioTrack(AudioManager.STREAM_MUSIC, 16000, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT,1280, AudioTrack.MODE_STREAM);
+        //trackplay.setStereoVolume((float) volume,(float) volume);
+        byte[] buffer = new byte[1280];
+        int byteread;
+        short tmpshort;
+        File historyRaw=new File("/sdcard/history.raw");
+        //connectAudioToServer();
+
+        try(FileInputStream in = new FileInputStream(historyRaw)){
+            trackplay.play();
+            while((byteread = in.read(buffer))!=-1 ){
+
+                //amplification
+                for(int i = 0;i<640;i++){
+                    tmpshort = (short) ((buffer[2*i] << 8) | buffer[2*i+1]);
+                    //tmpshort *= 2;
+                    buffer[2*i]=(byte) (tmpshort >>> 8);
+                    buffer[2*i+1]=(byte) (tmpshort >>> 0);
+                }
+
+                trackplay.write(buffer,0,1280);
+            }
+            trackplay.release();
+        }
+        catch (Exception ex){}
     }
 
     @Override
