@@ -6,6 +6,8 @@ import android.os.Looper;
 import android.util.Log;
 import edu.cmu.pocketsphinx.Config;
 import edu.cmu.pocketsphinx.Decoder;
+import edu.cmu.pocketsphinx.Feature;
+import edu.cmu.pocketsphinx.FrontEnd;
 import edu.cmu.pocketsphinx.FsgModel;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
@@ -16,6 +18,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import javax.xml.transform.Result;
 
 /**
  * Created by harry on 11/5/15.
@@ -194,17 +198,31 @@ public class MyRecognizer {
     private class ResultEvent extends RecognitionEvent {
         protected final Hypothesis hypothesis;
         private final boolean finalResult;
+        private final int interruptType;
 
         ResultEvent(Hypothesis hypothesis, boolean finalResult) {
             super();
             this.hypothesis = hypothesis;
             this.finalResult = finalResult;
+            this.interruptType = 0;
+        }
+
+        ResultEvent(Hypothesis hypothesis, boolean finalResult, int interruptType){
+            super();
+            this.hypothesis = hypothesis;
+            this.finalResult = finalResult;
+            this.interruptType = interruptType;
         }
 
         protected void execute(RecognitionListener listener) {
             if(this.finalResult) {
+                //this.hypothesis.setBestScore(1);
                 listener.onResult(this.hypothesis);
-            } else {
+            } else if(interruptType!=0){
+                //hypothesis.setBestScore(-1);
+                listener.onResult(this.hypothesis);
+            }
+            else {
                 listener.onPartialResult(this.hypothesis);
             }
 
@@ -324,6 +342,9 @@ public class MyRecognizer {
 
         //speech properties
         Queue<float[]> energyQueue = new ConcurrentLinkedQueue<float[]>();
+        boolean distraction = false;
+        int silenceCount;
+        float silenceThres = (float)1E9;
 
 
         public SuperRecognizerThread(int timeout) {
@@ -334,6 +355,7 @@ public class MyRecognizer {
             }
 
             this.remainingSamples = this.timeoutSamples;
+            silenceCount=0;
         }
 
         //speech utilities
@@ -358,18 +380,32 @@ public class MyRecognizer {
                     boolean inSpeech = decoder.getInSpeech();
                     recorder.read(buffer, 0, buffer.length);
 
-                    while(!interrupted() && (this.timeoutSamples == -1 || this.remainingSamples > 0)) {
+                    energyQueue.clear();
+                    float energy;
+
+                    while(!distraction && !interrupted() && (this.timeoutSamples == -1 || this.remainingSamples > 0)) {
                         int nread = recorder.read(buffer, 0, buffer.length);
                         if(-1 == nread) {
                             throw new RuntimeException("error reading audio buffer");
                         }
+                        energy = bufferEnergy(buffer);
+                        //System.out.println("instant energy: "+energy);
 
                         if(nread > 0) {
                             fop.write(short2byte(buffer, buffer.length));
-                            //whatever audio processing
+                            //whatever audio processing here
+                            if(energy<silenceThres)
+                                silenceCount+=1;
+                            else
+                                silenceCount=0;
+                            System.out.println("silence count: " + silenceCount);
 
 
-                            decoder.processRaw(buffer, (long)nread, false, false);
+                            decoder.processRaw(buffer, (long) nread, false, false);
+                            FrontEnd fe = decoder.getFe();
+                            fe.
+
+
                             if(decoder.getInSpeech() != inSpeech) {
                                 inSpeech = decoder.getInSpeech();
                                 mainHandler.post(new InSpeechChangeEvent(inSpeech));
@@ -380,7 +416,13 @@ public class MyRecognizer {
                             }
 
                             Hypothesis hypothesis = decoder.hyp();
-                            mainHandler.post(new ResultEvent(hypothesis, false));
+                            if(silenceCount>15) {
+                                if(hypothesis==null)
+                                    hypothesis = new Hypothesis("distracted!",0,0);
+                                distraction = true;
+                                mainHandler.post(new ResultEvent(hypothesis, false));
+                            }
+                                mainHandler.post(new ResultEvent(hypothesis, false));
                         }
 
                         if(this.timeoutSamples != -1) {

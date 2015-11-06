@@ -158,6 +158,11 @@ public class CommandListener implements RecognitionListener {
     @Override
     public void onResult(Hypothesis hypothesis){
         System.out.println("we have result");
+        //if(hypothesis.getBestScore()==-1){
+        //    Message msg = new Message();
+        //    msg.arg1 = 6;
+        //    commandHandler.sendMessage(msg);
+        //}
 
     }
 
@@ -183,6 +188,13 @@ public class CommandListener implements RecognitionListener {
                 Message msg = new Message();
                 msg.arg1 = 5;
                 msg.obj = cmd;
+                recognizer.stop();
+                commandHandler.sendMessage(msg);
+            }
+            if (cmd.equals("distracted!")){
+                Message msg = new Message();
+                msg.arg1 = 6;
+                commandHandler.sendMessage(msg);
                 recognizer.stop();
                 commandHandler.sendMessage(msg);
             }

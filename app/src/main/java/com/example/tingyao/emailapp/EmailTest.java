@@ -75,7 +75,7 @@ public class EmailTest extends AppCompatActivity {
                     commandListener.Search("cmd1",7000);
                     emailNLG.speakRaw("Yes?");
                 }
-                if (msg.arg1==1){
+                else if (msg.arg1==1){
                     command = msg.obj.toString();
                     tView.setText("action for: \n" + command);
                     if(command.equals("check in box") || command.equals("check inbox")){
@@ -95,19 +95,23 @@ public class EmailTest extends AppCompatActivity {
                         commandListener.Search("cmd_start",-1);
                     }
                 }
-                if (msg.arg1==2){
+                else if (msg.arg1==2){
                     commandListener.Search("cmd_start", -1);
                 }
-                if (msg.arg1==3){
+                else if (msg.arg1==3){
                     emailNLG.speakRaw("Your email has been sent.");
                     commandListener.Search("cmd_start",-1);
                 }
-                if (msg.arg1==4){
+                else if (msg.arg1==4){
                     ReadEmailFrom(msg.obj.toString());
                     commandListener.Search("cmd_start",-1);
                 }
-                if (msg.arg1==5){
+                else if (msg.arg1==5){
                     PlayBack();
+                }
+                else if (msg.arg1==6){
+                    commandListener.StopSearch();
+                    emailNLG.speakRaw("Would you like to continue?");
                 }
                 return false;
             }
