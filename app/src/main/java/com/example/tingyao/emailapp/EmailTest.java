@@ -111,7 +111,7 @@ public class EmailTest extends AppCompatActivity {
                 }
                 else if (msg.arg1==6){
                     commandListener.StopSearch();
-                    emailNLG.speakRaw("Would you like to continue?");
+                    emailNLG.speakRaw("You are distracted. Would you like to continue?");
                 }
                 return false;
             }

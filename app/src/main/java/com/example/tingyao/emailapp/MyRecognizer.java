@@ -402,8 +402,8 @@ public class MyRecognizer {
 
 
                             decoder.processRaw(buffer, (long) nread, false, false);
-                            FrontEnd fe = decoder.getFe();
-                            fe.
+                            //FrontEnd fe = decoder.getFe();
+                            //fe.
 
 
                             if(decoder.getInSpeech() != inSpeech) {
@@ -416,7 +416,7 @@ public class MyRecognizer {
                             }
 
                             Hypothesis hypothesis = decoder.hyp();
-                            if(silenceCount>15) {
+                            if(silenceCount>12) {
                                 if(hypothesis==null)
                                     hypothesis = new Hypothesis("distracted!",0,0);
                                 distraction = true;
