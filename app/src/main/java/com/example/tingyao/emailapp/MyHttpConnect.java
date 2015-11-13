@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -23,7 +24,6 @@ public class MyHttpConnect {
     private String link;
     private URL url;
 
-
     public MyHttpConnect(String addr){
         link=addr;
         try{
@@ -33,14 +33,6 @@ public class MyHttpConnect {
         }
 
     }
-/*
-    public URLConnection ConnectToBingService() throws IOException{
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("Content-Type","audio/wav; codec=\"audio/pcm\"; samplerate=16000");
-        conn.setRequestProperty("Accept","application/json;text/xml");
-        conn.setRequestProperty("ProtocolVersion","HTTP/1.1");
-
-    }*/
 
     public URLConnection PostToServer(String params) throws IOException{
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();

@@ -12,31 +12,13 @@
         android:id="@+id/textView" />
 
     <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Send"
-        android:id="@+id/text_send"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/cmdtext"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignTop="@+id/text_send"
-        android:layout_toStartOf="@+id/text_send" />
-
-    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="STOP"
         android:id="@+id/stop_voice"
-        android:layout_above="@+id/cmdtext"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_marginBottom="57dp" />
+        android:layout_marginBottom="122dp" />
 
     <Button
         android:layout_width="wrap_content"
@@ -44,7 +26,16 @@
         android:text="Voice Command"
         android:id="@+id/voice_cmd"
         android:layout_alignBottom="@+id/stop_voice"
-        android:layout_alignEnd="@+id/text_send"
+        android:layout_alignParentEnd="true"
         android:layout_toEndOf="@+id/stop_voice" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ASR Test"
+        android:id="@+id/asr_test"
+        android:layout_below="@+id/voice_cmd"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>

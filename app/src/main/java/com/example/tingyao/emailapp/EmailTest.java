@@ -36,15 +36,17 @@ public class EmailTest extends AppCompatActivity {
     EmailNLG emailNLG;
     public CommandListener commandListener;
     //public AndroidCommandListener commandListener;
+    public BingRecognizer bingRecognizer;
     public Handler commandHandler;
     Context context;
     private String command;
 
     //UserInterface
-    Button sendButton;
+
     Button voiceCmdButton;
     Button stopButton;
-    EditText textCmd;
+    Button asrButton;
+
     TextView tView;
 
     //tmp, should be handled by DM
@@ -56,10 +58,9 @@ public class EmailTest extends AppCompatActivity {
         setContentView(R.layout.activity_email_test);
 
         //user interface
-        sendButton = (Button)findViewById(R.id.text_send);
+        asrButton = (Button) findViewById(R.id.asr_test);
         voiceCmdButton = (Button) findViewById(R.id.voice_cmd);
         stopButton = (Button) findViewById(R.id.stop_voice);
-        textCmd = (EditText)findViewById(R.id.cmdtext);
         tView = (TextView)findViewById(R.id.textView);
 
         context = getApplicationContext();
@@ -127,15 +128,9 @@ public class EmailTest extends AppCompatActivity {
 
         commandListener = new CommandListener(context, commandHandler);
         //commandListener = new AndroidCommandListener(context, commandHandler);
+        bingRecognizer = new BingRecognizer("dmeexdia","wNUXY7NvpIw1ugB4zVcUPhVQS6Lv9MFNPWa6qWIkIFY=");
 
-        sendButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Perform action on click
-                command = textCmd.getText().toString();
-                tView.setText("action for "+command);
-                textCmd.setText("");
-            }
-        });
+
 
         voiceCmdButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -147,10 +142,17 @@ public class EmailTest extends AppCompatActivity {
             public void onClick(View v) {
                 // Perform action on click
                 commandListener.StopSearch();
+
             }
         });
-
-
+        asrButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                try{
+                    String asrOutput = bingRecognizer.BingSuperRecognition();
+                    tView.setText("output from bingASR: \n"+asrOutput);
+                }catch(IOException e){Log.e("EmailTest",e.getMessage());}
+            }
+        });
     }
 
     public void Summarize() {
