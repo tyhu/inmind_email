@@ -235,6 +235,10 @@ public class EmailTest extends AppCompatActivity {
         emailNLG.speakRaw(emailcontent);
     }
 
+    public void CheckUrgentEmail(){
+        
+    }
+
     public void PlayBack(){
         AudioTrack trackplay=new AudioTrack(AudioManager.STREAM_MUSIC, 16000, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT,1280, AudioTrack.MODE_STREAM);
         //trackplay.setStereoVolume((float) volume,(float) volume);
