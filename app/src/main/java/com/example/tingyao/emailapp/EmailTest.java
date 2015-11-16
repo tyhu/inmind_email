@@ -112,7 +112,8 @@ public class EmailTest extends AppCompatActivity {
                 }
                 else if (msg.arg1==6){
                     commandListener.StopSearch();
-                    emailNLG.speakRaw("You are distracted. Would you like to continue?");
+                    //emailNLG.speakRaw("You are distracted. Would you like to continue?");
+                    emailNLG.speakRaw("You are distracted. System shutting down");
                 }
                 return false;
             }
@@ -153,6 +154,7 @@ public class EmailTest extends AppCompatActivity {
                 }catch(IOException e){Log.e("EmailTest",e.getMessage());}
             }
         });
+        asrButton.setEnabled(false);
     }
 
     public void Summarize() {

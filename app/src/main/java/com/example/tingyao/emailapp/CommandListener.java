@@ -137,6 +137,8 @@ public class CommandListener implements RecognitionListener {
             recognizer.startListening(type, search_duration);
     }
 
+
+
     public void SuperSearch(String type, int search_duration){
         recognizer.stop();
         recognizer.startSuperListening(type, search_duration);
