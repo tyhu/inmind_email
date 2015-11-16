@@ -98,14 +98,15 @@ public class EmailTest extends AppCompatActivity {
                 }
                 else if (msg.arg1==2){
                     if(CheckUrgentEmail())
-                        commandListener.Search("cmd_reply_only",7000);
+                        commandListener.Search("cmd_reply_only",-1);
                     else{
                         System.out.println("no urgent email");
                         //commandListener.Search("cmd_start", -1);
-                        commandListener.Search("cmd_start", 7000);
+                        commandListener.Search("cmd_start", 10000);
                     }
                 }
                 else if (msg.arg1==3){
+                    tView.setText("terminate");
                     emailNLG.speakRaw("Your email has been sent.");
                     commandListener.Search("cmd_start",-1);
                 }
@@ -143,7 +144,7 @@ public class EmailTest extends AppCompatActivity {
             public void onClick(View v) {
                 // Perform action on click
                 //commandListener.Search("cmd_start",-1);
-                commandListener.Search("cmd_start", 7000);
+                commandListener.Search("cmd_start", 10000);
             }
         });
         stopButton.setOnClickListener(new View.OnClickListener() {

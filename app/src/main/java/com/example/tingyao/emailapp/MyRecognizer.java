@@ -339,9 +339,10 @@ public class MyRecognizer {
                             mainHandler.post(new InSpeechChangeEvent(inSpeech));
                         }
 
-                        if(inSpeech) {
-                            this.remainingSamples = this.timeoutSamples;
-                        }
+                        //remove the inSpeech detection
+                        //if(inSpeech) {
+                        //    this.remainingSamples = this.timeoutSamples;
+                        //}
 
                         Hypothesis hypothesis = decoder.hyp();
                         mainHandler.post(new ResultEvent(hypothesis, false));
