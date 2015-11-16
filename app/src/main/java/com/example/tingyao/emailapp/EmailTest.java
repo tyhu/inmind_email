@@ -97,7 +97,13 @@ public class EmailTest extends AppCompatActivity {
                     }
                 }
                 else if (msg.arg1==2){
-                    commandListener.Search("cmd_start", -1);
+                    if(CheckUrgentEmail())
+                        commandListener.Search("cmd_reply_only",7000);
+                    else{
+                        System.out.println("no urgent email");
+                        //commandListener.Search("cmd_start", -1);
+                        commandListener.Search("cmd_start", 7000);
+                    }
                 }
                 else if (msg.arg1==3){
                     emailNLG.speakRaw("Your email has been sent.");
@@ -136,7 +142,8 @@ public class EmailTest extends AppCompatActivity {
         voiceCmdButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Perform action on click
-                commandListener.Search("cmd_start",-1);
+                //commandListener.Search("cmd_start",-1);
+                commandListener.Search("cmd_start", 7000);
             }
         });
         stopButton.setOnClickListener(new View.OnClickListener() {
@@ -235,8 +242,19 @@ public class EmailTest extends AppCompatActivity {
         emailNLG.speakRaw(emailcontent);
     }
 
-    public void CheckUrgentEmail(){
-        
+    public boolean CheckUrgentEmail(){
+        HashMap<String, String> keyValuePairs = new HashMap<String,String>();
+        keyValuePairs.put("Command", "check-urgent");
+        String params = conn.SetParams(keyValuePairs);
+        String responseStr = PostToServer(params);
+        CommandParser parse = new CommandParser(responseStr);
+        String emailcontent = parse.GetString("email-content");
+        if(emailcontent.equals("none"))
+            return false;
+        else{
+            emailNLG.stateUrgentEmail(emailcontent);
+            return true;
+        }
     }
 
     public void PlayBack(){

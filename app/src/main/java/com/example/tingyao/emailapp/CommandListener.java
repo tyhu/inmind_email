@@ -29,7 +29,9 @@ public class CommandListener implements RecognitionListener {
     private static final String CMD_FINAL = "cmd_final";
     private static final String CMD_TYPE1 = "cmd1";
     private static final String CMD_CONTACT = "contact";
+    private static final String CMD_REPLY_ONLY = "cmd_reply_only";
     private static final String START_KEY = "in mind agent";
+    private static final String REPLY_EMAIL = "reply email";
     private static final String TERMINATE_WORD = "terminate";
     private Handler commandHandler;
 
@@ -92,6 +94,7 @@ public class CommandListener implements RecognitionListener {
 
         //recognizer.addKeyphraseSearch("cmd1", "reply email");
         recognizer.addKeyphraseSearch(CMD_START, "in mind agent");
+        recognizer.addKeyphraseSearch(CMD_REPLY_ONLY, REPLY_EMAIL);
         recognizer.addKeyphraseSearch(CMD_FINAL, TERMINATE_WORD);
         File cmd1Grammar = new File(assetsDir, "cmd1.gram");
         File contactGrammar = new File(assetsDir, "contact.gram");

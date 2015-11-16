@@ -441,7 +441,7 @@ public class MyRecognizer {
                                 if(silenceCount==0) {
                                     System.out.println("speech count: " + speechCount);
                                     //accumulate speech segment, whose chunk size make us believe that it is a filler
-                                    if(speechCount>2 && speechCount<5)
+                                    if(speechCount>2 && speechCount<6)
                                         smallChunkNum+=1;
                                     else
                                         smallChunkNum=0;

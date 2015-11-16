@@ -50,5 +50,11 @@ public class EmailNLG {
         return currentText+countStr+msgStr+beV+" from "+sender.split(" ")[0]+",";
     }
 
+    public void stateUrgentEmail(String msg){
+        String nlgText="you have an urgent email, ";
+        nlgText+=msg;
+        tts.speakThis(nlgText);
+    }
+
     public void speakRaw(String msg){ tts.speakThis(msg); }
 }
