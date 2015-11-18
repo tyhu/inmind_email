@@ -45,9 +45,11 @@ public class EmailNLG {
         String countStr= String.valueOf(count);
         String beV=" is";
         String msgStr="";
+        String prep = " from ";
         if(count>1) beV=" are";
         if(currentText.equals("")) msgStr=" message";
-        return currentText+countStr+msgStr+beV+" from "+sender.split(" ")[0]+",";
+        if(sender.equals("Schedule")) prep=" about ";
+        return currentText+countStr+msgStr+beV+prep+sender.split(" ")[0]+",";
     }
 
     public void stateUrgentEmail(String msg){
