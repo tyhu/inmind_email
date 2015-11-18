@@ -122,6 +122,10 @@ public class EmailTest extends AppCompatActivity {
                     //emailNLG.speakRaw("You are distracted. May I continue?");
                     emailNLG.speakRaw("You are distracted. System shutting down");
                 }
+                else if(msg.arg1==7){
+                    ReadSchedulingMsg();
+                    commandListener.Search("cmd_start",-1);
+                }
                 return false;
             }
         });
@@ -224,6 +228,17 @@ public class EmailTest extends AppCompatActivity {
         HashMap<String, String> keyValuePairs = new HashMap<String,String>();
         keyValuePairs.put("Command", "read");
         keyValuePairs.put("MsgId", "first");
+        String params = conn.SetParams(keyValuePairs);
+        String responseStr = PostToServer(params);
+        CommandParser parse = new CommandParser(responseStr);
+        String emailcontent = parse.GetString("email-content");
+        emailNLG.speakRaw(emailcontent);
+    }
+
+    public void ReadSchedulingMsg(){
+        HashMap<String, String> keyValuePairs = new HashMap<String,String>();
+        keyValuePairs.put("Command", "read");
+        keyValuePairs.put("MsgId", "schedule");
         String params = conn.SetParams(keyValuePairs);
         String responseStr = PostToServer(params);
         CommandParser parse = new CommandParser(responseStr);

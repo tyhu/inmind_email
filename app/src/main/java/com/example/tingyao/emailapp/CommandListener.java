@@ -214,6 +214,11 @@ public class CommandListener implements RecognitionListener {
                 msg.obj = cmd;
                 commandHandler.sendMessage(msg);
             }
+            if (cmd.equals("read the email about scheduling")){
+                Message msg = new Message();
+                msg.arg1 = 7;
+                commandHandler.sendMessage(msg);
+            }
         }
 
         //System.out.println("partial result!");

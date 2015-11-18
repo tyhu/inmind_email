@@ -41,6 +41,14 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 responseText = 'email-content:'+ReadMsgById(msglst[0]['id'])+'|'
             elif form['MsgId'].value=='name':
                 responseText = 'email-content:'+ReadMsgFrom(form['Name'].value)+'|'
+	    elif form['MsgId'].value=='schedule':
+		responseText = 'email-content:'+ReadSchduleEmail()+'|'
+	elif cmd=='check-urgent':
+	    msglst = GetMsgLst()
+	    urgenttxt = CheckUrgent(msglst[0]['id'])
+	    if len(urgenttxt)>2:
+		responseText = 'email-content:'+urgenttxt
+	    else: responseText = 'email-content:none'
                 
                 
         s.send_response(200)
