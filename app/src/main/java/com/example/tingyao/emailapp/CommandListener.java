@@ -29,6 +29,7 @@ public class CommandListener implements RecognitionListener {
     private static final String CMD_FINAL = "cmd_final";
     private static final String CMD_TYPE1 = "cmd1";
     private static final String CMD_CONTACT = "contact";
+    private static final String CMD_CONTI = "cmd_continue";
     private static final String CMD_REPLY_ONLY = "cmd_reply_only";
     private static final String START_KEY = "in mind agent";
     private static final String REPLY_EMAIL = "reply email";
@@ -83,8 +84,8 @@ public class CommandListener implements RecognitionListener {
                 .setRawLogDir(assetsDir)
 
                         // Threshold to tune for keyphrase to balance between false alarms and misses
-                //.setKeywordThreshold(1e-45f)
-                .setKeywordThreshold(1e-15f)
+                .setKeywordThreshold(1e-20f)
+                //.setKeywordThreshold(1e-15f)
 
                         // Use context-independent phonetic search, context-dependent is too slow for mobile
                 .setBoolean("-allphone_ci", true)
@@ -97,9 +98,11 @@ public class CommandListener implements RecognitionListener {
         recognizer.addKeyphraseSearch(CMD_REPLY_ONLY, REPLY_EMAIL);
         recognizer.addKeyphraseSearch(CMD_FINAL, TERMINATE_WORD);
         File cmd1Grammar = new File(assetsDir, "cmd1.gram");
-        File contactGrammar = new File(assetsDir, "contact.gram");
+        File contactGrammar = new File(assetsDir, "contact2.gram");
+        File continueGrammar = new File(assetsDir, "continue.gram");
         recognizer.addGrammarSearch(CMD_TYPE1, cmd1Grammar);
         recognizer.addGrammarSearch(CMD_CONTACT, contactGrammar);
+        recognizer.addGrammarSearch(CMD_CONTI, continueGrammar);
         //TODO
         //I should define all the searching type here
         /** In your application you might not need to add all those searches.
@@ -217,6 +220,16 @@ public class CommandListener implements RecognitionListener {
             if (cmd.equals("read the email about scheduling")){
                 Message msg = new Message();
                 msg.arg1 = 7;
+                commandHandler.sendMessage(msg);
+            }
+            if (cmd.equals("read next email")){
+                Message msg = new Message();
+                msg.arg1 = 9;
+                commandHandler.sendMessage(msg);
+            }
+            if (cmd.equals("continue")||cmd.equals("yes")){
+                Message msg = new Message();
+                msg.arg1 = 8;
                 commandHandler.sendMessage(msg);
             }
         }

@@ -73,7 +73,7 @@ public class EmailTest extends AppCompatActivity {
             public boolean handleMessage(Message msg) {
                 if (msg.arg1==0){
                     //start keyword
-                    commandListener.Search("cmd1",7000);
+                    commandListener.Search("cmd1",15000);
                     emailNLG.speakRaw("Yes?");
                 }
                 else if (msg.arg1==1){
@@ -119,12 +119,26 @@ public class EmailTest extends AppCompatActivity {
                 }
                 else if (msg.arg1==6){
                     commandListener.StopSearch();
-                    //emailNLG.speakRaw("You are distracted. May I continue?");
-                    emailNLG.speakRaw("You are distracted. System shutting down");
+                    emailNLG.speakRaw("You are distracted. May I continue?");
+                    //emailNLG.speakRaw("You are distracted. System shutting down");
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    commandListener.Search("cmd_continue",-1);
+                    //emailNLG.speakRaw("You are distracted. System shutting down");
                 }
                 else if(msg.arg1==7){
                     ReadSchedulingMsg();
                     commandListener.Search("cmd_start",-1);
+                }
+                else if(msg.arg1==8){
+                    replyEmail();
+                }
+                else if(msg.arg1==9){
+                    ReadFirstEmail();
+                    commandListener.Search("cmd_start", -1);
                 }
                 return false;
             }
@@ -160,13 +174,23 @@ public class EmailTest extends AppCompatActivity {
         });
         asrButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                try{
+                /*try{
                     String asrOutput = bingRecognizer.BingSuperRecognition();
                     tView.setText("output from bingASR: \n"+asrOutput);
-                }catch(IOException e){Log.e("EmailTest",e.getMessage());}
+                }catch(IOException e){Log.e("EmailTest",e.getMessage());}*/
+                emailNLG.speakRaw("You were distracted. I will repeat the previous email");
+                ReadFirstEmail();
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                PlayBack();
+                replyEmail();
             }
         });
         //asrButton.setEnabled(false);
+        tView.setText("Hi, Ting-Yao:\n\nHappy Birthday! Your birday party has been scheduled. It will be at the Union Grill, your favorite! I also invited some of your old friends and a surprise person. There will be some birthday presents! So, 6:00pm tonight, as we agreed before. We are all looking forward to it.\nSee you there!\n\nBest,\nSteve");
     }
 
     public void Summarize() {
@@ -232,7 +256,7 @@ public class EmailTest extends AppCompatActivity {
         String responseStr = PostToServer(params);
         CommandParser parse = new CommandParser(responseStr);
         String emailcontent = parse.GetString("email-content");
-        emailNLG.speakRaw(emailcontent);
+        emailNLG.speakRaw("Tony said, "+emailcontent);
     }
 
     public void ReadSchedulingMsg(){
@@ -250,12 +274,17 @@ public class EmailTest extends AppCompatActivity {
         HashMap<String, String> keyValuePairs = new HashMap<String,String>();
         keyValuePairs.put("Command", "read");
         keyValuePairs.put("MsgId", "name");
-        keyValuePairs.put("Name", sender);
+        String tsender = emailNLG.SenderF2T(sender);
+        keyValuePairs.put("Name", tsender);
         String params = conn.SetParams(keyValuePairs);
         String responseStr = PostToServer(params);
         CommandParser parse = new CommandParser(responseStr);
         String emailcontent = parse.GetString("email-content");
-        emailNLG.speakRaw(emailcontent);
+        if(emailcontent.equals("none")){
+            emailNLG.speakRaw("no messages from "+sender);
+        }
+        else
+            emailNLG.speakRaw(sender+" said, "+emailcontent);
     }
 
     public boolean CheckUrgentEmail(){
@@ -281,6 +310,8 @@ public class EmailTest extends AppCompatActivity {
         short tmpshort;
         File historyRaw=new File("/sdcard/history.raw");
         //connectAudioToServer();
+        emailNLG.speakRaw("Your latest reply is");
+        while(emailNLG.isSpeaking()){ System.out.println("true");}
 
         try(FileInputStream in = new FileInputStream(historyRaw)){
             trackplay.play();
@@ -289,7 +320,7 @@ public class EmailTest extends AppCompatActivity {
                 //amplification
                 for(int i = 0;i<640;i++){
                     tmpshort = (short) ((buffer[2*i] << 8) | buffer[2*i+1]);
-                    //tmpshort *= 2;
+                    tmpshort *= 2;
                     buffer[2*i]=(byte) (tmpshort >>> 8);
                     buffer[2*i+1]=(byte) (tmpshort >>> 0);
                 }

@@ -39,6 +39,10 @@ public class BingRecognizer {
     private final int sampleRate=16000;
     private int bufferSize;
 
+    static{
+        System.loadLibrary("opensmileTest");
+    }
+
     public BingRecognizer(String client_id,String client_secret){
         this.client_id = client_id;
         this.client_secret = client_secret;
@@ -98,10 +102,13 @@ public class BingRecognizer {
         outputStream.write(wav_header);
         recorder.startRecording();
         System.out.println("start recording!");
-        while(silenceCount<10 || totalCount>300) {
+        while(silenceCount<7 || totalCount>300) {
             recorder.read(buffer, 0, buffer.length);
             shortbuf=byte2short(buffer, bufferSize);
             energy = bufferEnergy(shortbuf);
+
+            //opensmile execution
+
             if(energy>1E9)
                 silenceCount=0;
             else

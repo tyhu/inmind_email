@@ -442,7 +442,8 @@ public class MyRecognizer {
                                 if(silenceCount==0) {
                                     System.out.println("speech count: " + speechCount);
                                     //accumulate speech segment, whose chunk size make us believe that it is a filler
-                                    if(speechCount>2 && speechCount<6)
+                                    //if(speechCount>2 && speechCount<6)
+                                    if(speechCount>1 && speechCount<8)
                                         smallChunkNum+=1;
                                     else
                                         smallChunkNum=0;
@@ -475,7 +476,7 @@ public class MyRecognizer {
                             }
 
                             Hypothesis hypothesis = decoder.hyp();
-                            if(silenceCount>9 || smallChunkNum>2) {
+                            if(silenceCount>7 || smallChunkNum>2) {
                             //if(silenceCount>10 || filler_flag) {
                                 if(hypothesis==null)
                                     hypothesis = new Hypothesis("distracted!",0,0);
