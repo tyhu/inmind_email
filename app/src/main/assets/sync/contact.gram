@@ -2,7 +2,8 @@
 
 grammar contact;
 
-<name> = tony       |
+<name> = mom        |
+         tony       |
          kyusong    |
          alan       |
          maxine     ;
